@@ -89,7 +89,7 @@ def list_filenames(bounds4326, bounds25832):
         "type": "WMS",
         "url": "https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wms",
         "bbox": bounds25832,
-        "layer_name": "WMS NW ALKIS",
+        "layer_name": "ALKIS",
         "format": "image/png",
         "styles": "SW",
         "version": "1.3.0"

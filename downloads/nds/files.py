@@ -46,13 +46,31 @@ def list_dgm_filenames(bounds):
     if response.status_code != 200:
         return response.status_code, None
     
+    features = response.json()["features"]
+
+    def next_page(url):
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            return response.status_code, None
+        return 200, response
+
+    while True:
+        json_response = response.json()
+        if json_response["links"][0]["rel"] == "next":
+            code, response = next_page(json_response["links"][0]["href"])
+            if code == 200:  
+                json_response = response.json() 
+                for f in json_response["features"]:
+                    features.append(f)             
+        else:
+            break
+    
     filenames = {
         "type": "ressource",
         "url": None,
         "files": []
     }
 
-    features = response.json()["features"]
     for feature in features:
         assets = feature["assets"]
         if "dgm1-tif" in assets.keys():

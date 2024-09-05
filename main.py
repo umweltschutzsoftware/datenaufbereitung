@@ -143,7 +143,7 @@ if uploaded_file is not None or not select_with_gpkg:
     st.markdown("---")
     st.caption("Download")
     
-    if len(gdf) > 1:
+    if gdf is not None and len(gdf) > 1:
         st.error("Es wurde mehr als ein Polygon erkannt. Bitte laden Sie nur eine Datei hoch, die ein Polygon enthält.")
         shutil.rmtree(temp_dir)
         st.stop()

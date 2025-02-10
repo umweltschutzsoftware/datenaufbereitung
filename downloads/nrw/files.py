@@ -35,13 +35,27 @@ dateien = [{
     "datei": r"abk_sw_32{}_{}_1.tif",
 }]
 
-def dgm_filename_aus_metadata(x, y):
-    # Lese die Datei dgm1_tiff.csv in einen Dataframe ein
+def dgm_filename_aus_html(x, y):
+    import requests
     import pandas as pd
-    df = pd.read_csv("downloads/nrw/dgm1_tiff.csv", skiprows=5, delimiter=";")
-    # Finde die Zeile in der Spalte "Kachelnamen", die die übergebene x und y Koordinate enthält
-    # Gebe den gefundenen Kachelnamen als Ergebnis der Funktion zurück
-    return df[(df["Kachelname"].str.contains(str(x))) & (df["Kachelname"].str.contains(str(y)))].iloc[0]["Kachelname"] + ".tif"
+    import re
+
+    # URL der JSON-Datei
+    url = "https://www.opengeodata.nrw.de/produkte/geobasis/hm/dgm1_tiff/dgm1_tiff/index.json"
+
+    # JSON-Daten abrufen
+    response = requests.get(url)
+    response.raise_for_status()
+    json_data = response.json()
+
+    # Nur die Dateinamen extrahieren
+    df = pd.DataFrame(json_data["datasets"][0]["files"])
+
+    pattern = re.compile(r"dgm1_32_(\d+)_(\d+)_1_nw_\d{4}\.tif")
+    df[["x", "y"]] = df["name"].str.extract(pattern).astype(int)
+    print(df)
+
+    return df[(df["x"] == x) & (df["y"] == y)]["name"].values[0]
 
 
 def list_filenames(bounds):
@@ -57,7 +71,7 @@ def list_filenames(bounds):
                 }
             x, y = kachel
             if datei["fname"] == "Gelände":
-                datei_name = dgm_filename_aus_metadata(int(x), int(y))
+                datei_name = dgm_filename_aus_html(int(x), int(y))
             else:
                 datei_name = datei["datei"].format(int(x), int(y))
             filenames[datei["fname"]]["files"].append(datei_name)

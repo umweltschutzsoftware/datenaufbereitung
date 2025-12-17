@@ -5,3 +5,4 @@ owslib
 rasterio
 pyproj
 geopandas
+streamlit==1.52.0

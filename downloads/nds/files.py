@@ -43,6 +43,8 @@ def list_dgm_filenames(bounds):
     headers = {'Accept': 'application/json'}
     response = requests.get(dgm_url, headers=headers)
 
+    print(dgm_url)
+
     if response.status_code != 200:
         return response.status_code, None
     
@@ -56,14 +58,24 @@ def list_dgm_filenames(bounds):
 
     while True:
         json_response = response.json()
-        if json_response["links"][0]["rel"] == "next":
-            code, response = next_page(json_response["links"][0]["href"])
-            if code == 200:  
-                json_response = response.json() 
-                for f in json_response["features"]:
-                    features.append(f)             
-        else:
-            break
+        
+        # Find the "next" link (it may not be at index 0)
+        next_link = None
+        for link in json_response.get("links", []):
+            if link.get("rel") == "next":
+                next_link = link["href"]
+                break
+        
+        if next_link is None:
+            break  # No more pages
+        
+        code, response = next_page(next_link)
+        if code != 200:
+            break  # Error fetching next page
+        
+        for f in response.json()["features"]:
+            features.append(f)
+
     
     filenames = {
         "type": "ressource",
